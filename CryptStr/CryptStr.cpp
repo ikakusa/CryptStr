@@ -3,8 +3,10 @@
 
 int main()
 {
-	std::string crypted = protect("Hello, World!");
+	auto protected_string = protect("Hello, World!");
+	const char* buffer = protected_string.buffer();
+	//const char* buffer = protected_string; //operator const CharType*() is also available
 	
 	//Output: Hello, World!
-	std::cout << crypted << std::endl;
+	std::cout << buffer << std::endl;
 }
