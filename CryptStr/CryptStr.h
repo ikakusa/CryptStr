@@ -13,10 +13,10 @@ namespace ikakusa {
     class protected_string {
     public:
         uint32_t data[Len - 1];
-		FORCEINLINE consteval size_t size() {
-			return Len - 1;
-		}
-        FORCEINLINE consteval std::uint32_t _time() {
+        FORCEINLINE constexpr size_t size() {
+            return Len - 1;
+        }
+        FORCEINLINE constexpr std::uint32_t _time() {
             return (__TIME__[0] - '0') ^ Count
                 + (__TIME__[1] - '0') ^ Count * 2
                 + (__TIME__[3] - '0') ^ Count * 3
@@ -56,4 +56,4 @@ namespace ikakusa {
 }
 
 #define protect(str) \
-    ikakusa::protected_string<decltype(str), sizeof(str), __COUNTER__>(str).reveal();
+ikakusa::protected_string<decltype(str), sizeof(str), __COUNTER__>(str).reveal()
