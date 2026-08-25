@@ -31,9 +31,9 @@ namespace ikakusa {
         private:
             Type _buffer{};
         public:
-            scoped_string(protected_string* _instance, std::uint32_t* d) {
-                for (size_t i = 0; i < Len - 1; ++i) {
-                    _buffer[i] = d[i] ^ _instance->generate_seed(i);
+            scoped_string(protected_string* _instance, std::uint32_t* d, size_t count, size_t len) {
+                for (size_t i = 0; i < len - 1; ++i) {
+                    _buffer[i] = d[i] ^ _instance->generate_seed(i, count);
                 }
             }
             ~scoped_string() {
@@ -47,11 +47,13 @@ namespace ikakusa {
             }
         };
     public:
+        size_t len;
+        size_t count;
         std::uint32_t data[Len - 1];
-        FORCEINLINE constexpr size_t size() {
+        FORCEINLINE consteval size_t size() {
             return Len - 1;
         }
-        FORCEINLINE constexpr std::uint32_t _time() {
+        FORCEINLINE consteval std::uint32_t _time() {
             return ((__TIME__[0] - '0') ^ Count)
                 + ((__TIME__[1] - '0') ^ (Count * 2))
                 + ((__TIME__[3] - '0') ^ (Count * 3))
@@ -59,21 +61,23 @@ namespace ikakusa {
                 + ((__TIME__[6] - '0') ^ (Count * 5))
                 + ((__TIME__[7] - '0') ^ (Count * 6));
         }
-        NOINLINE constexpr std::uint32_t generate_seed(size_t i) {
-            std::uint32_t _1 = (size() - Count + (size() * Count * Count)) ^ ((_time() * 0x7a2891du + i));
-            _1 ^= (_1 << 17) + i + Count;
-            _1 ^= (_1 >> 13) + i * Count;
-            _1 ^= (_1 << 4) + i + Count;
+        NOINLINE constexpr std::uint32_t generate_seed(size_t i, size_t count) {
+            volatile std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() * 0x7a2891du + i));
+            _1 ^= (_1 << 17) + i + count;
+            _1 ^= (_1 >> 13) + i * count;
+            _1 ^= (_1 << 4) + i + count;
             return _1;
         }
     public:
-        FORCEINLINE consteval explicit protected_string(DataType _data) {
-            for (size_t i = 0; i < size(); ++i) {
-                data[i] = _data[i] ^ generate_seed(i);
+        consteval explicit protected_string(DataType _data) {
+            count = Count;
+            len = Len;
+            for (size_t i = 0; i < len - 1; ++i) {
+                data[i] = _data[i] ^ generate_seed(i, count);
             }
         }
-        FORCEINLINE auto reveal() {
-            auto _result = scoped_string(this, data);
+        NOINLINE auto reveal() {
+            auto _result = scoped_string(this, data, count, len);
 			return _result;
         }
     };
