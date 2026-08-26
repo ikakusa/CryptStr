@@ -62,10 +62,10 @@ namespace ikakusa {
                 + ((__TIME__[7] - '0') ^ (Count * 6));
         }
         NOINLINE constexpr std::uint32_t generate_seed(size_t i, size_t count) {
-            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() * 0x7a2891du + i));
-            _1 ^= (_1 << 17) + i + count;
+            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() + 0x7a2891du + i));
+            _1 ^= (_1 << 11) + i + count;
             _1 ^= (_1 >> 13) + i * count;
-            _1 ^= (_1 << 4) + i + count;
+            _1 ^= (_1 << 7) + i + count;
             return _1;
         }
     public:
