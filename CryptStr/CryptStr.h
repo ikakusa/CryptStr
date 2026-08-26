@@ -31,11 +31,11 @@ namespace ikakusa {
         private:
             Type _buffer{};
         public:
-            scoped_string(protected_string* _instance, CharType* d, size_t count, size_t len) {
-                for (size_t i = 0; i < len / sizeof(CharType) - 1; ++i) {
+            scoped_string(protected_string* _instance, CharType* d, size_t count) {
+                for (size_t i = 0; i < Len / sizeof(CharType) - 1; ++i) {
                     _buffer[i] = static_cast<CharType>(static_cast<uint32_t>(d[i]) ^ _instance->generate_seed(i, count));
                 }
-                _buffer[len / sizeof(CharType) - 1] = CharType{};
+                _buffer[Len / sizeof(CharType) - 1] = CharType{};
             }
             ~scoped_string() {
 				SecureZeroMemory(_buffer, sizeof(_buffer));
@@ -48,11 +48,10 @@ namespace ikakusa {
             }
         };
     public:
-        size_t len;
         size_t count;
         CharType data[Len / sizeof(CharType) - 1];
         FORCEINLINE consteval size_t size() {
-            return Len - 1;
+            return Len / sizeof(CharType) - 1;
         }
         FORCEINLINE consteval std::uint32_t _time() {
             return ((__TIME__[0] - '0') ^ Count)
@@ -72,23 +71,22 @@ namespace ikakusa {
     public:
         consteval explicit protected_string(DataType _data) {
             count = Count;
-            len = Len;
-            for (size_t i = 0; i < len / sizeof(CharType) - 1; ++i) {
+            for (size_t i = 0; i < size(); ++i) {
                 data[i] = static_cast<CharType>(static_cast<uint32_t>(_data[i]) ^ generate_seed(i, count));
             }
         }
         NOINLINE auto reveal() {
             using Type = std::basic_string<CharType>;
             Type result{};
-			result.resize(len - 1);
-            for (size_t i = 0; i < len / sizeof(CharType) - 1; ++i) {
+			result.resize(size());
+            for (size_t i = 0; i < size(); ++i) {
                 result[i] = static_cast<CharType>(static_cast<uint32_t>(data[i]) ^ generate_seed(i, count));
             }
-			result[len / sizeof(CharType) - 1] = CharType{};
+			result[size()] = CharType{};
             return result;
         }
         NOINLINE auto reveal2() {
-            auto _result = scoped_string(this, data, count, len);
+            auto _result = scoped_string(this, data, count);
 			return _result;
         }
     };
