@@ -82,7 +82,6 @@ namespace ikakusa {
             for (size_t i = 0; i < size(); ++i) {
                 result[i] = static_cast<CharType>(static_cast<uint32_t>(data[i]) ^ generate_seed(i, count));
             }
-			result[size()] = CharType{};
             return result;
         }
         NOINLINE auto reveal2() {
