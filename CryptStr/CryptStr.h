@@ -19,34 +19,6 @@ namespace ikakusa {
             std::remove_cvref_t<DataType>
             >
             >;
-    private:
-        class scoped_string {
-            using CharType =
-                std::remove_cv_t<
-                std::remove_extent_t<
-                std::remove_cvref_t<DataType>
-                >
-                >;
-            using Type = CharType[Len / sizeof(CharType) - 1];
-        private:
-            Type _buffer{};
-        public:
-            scoped_string(protected_string* _instance, CharType* d, size_t count) {
-                for (size_t i = 0; i < Len / sizeof(CharType) - 1; ++i) {
-                    _buffer[i] = static_cast<CharType>(static_cast<uint32_t>(d[i]) ^ _instance->generate_seed(i, count));
-                }
-                _buffer[Len / sizeof(CharType) - 1] = CharType{};
-            }
-            ~scoped_string() {
-				SecureZeroMemory(_buffer, sizeof(_buffer));
-            }
-            const CharType* buffer() const {
-                return _buffer;
-            }
-            operator const CharType* () const {
-                return _buffer;
-            }
-        };
     public:
         size_t count;
         CharType data[Len / sizeof(CharType) - 1];
@@ -61,38 +33,32 @@ namespace ikakusa {
                 + ((__TIME__[6] - '0') ^ (Count * 5))
                 + ((__TIME__[7] - '0') ^ (Count * 6));
         }
-        NOINLINE constexpr std::uint32_t generate_seed(size_t i, size_t count) {
-            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() + 0x7a2891du + i));
+        template <size_t i> 
+        NOINLINE constexpr std::uint32_t generate_seed(size_t count) {
+            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() + 0x7a291du + i));
             _1 ^= (_1 << 11) + i + count;
             _1 ^= (_1 >> 13) + i * count;
             _1 ^= (_1 << 7) + i + count;
             return _1;
         }
     public:
-        consteval explicit protected_string(DataType _data) {
+		template <size_t... Is>
+        consteval explicit protected_string(DataType _data, std::index_sequence<Is...>) {
             count = Count;
-            for (size_t i = 0; i < size(); ++i) {
-                data[i] = static_cast<CharType>(static_cast<uint32_t>(_data[i]) ^ generate_seed(i, count));
-            }
+            ((data[Is] = static_cast<CharType>(static_cast<uint32_t>(_data[Is]) ^ generate_seed<Is>(count))), ...);
         }
-        NOINLINE auto reveal() {
+		template <size_t... Is>
+        NOINLINE auto reveal(std::index_sequence<Is...>) {
             using Type = std::basic_string<CharType>;
             Type result{};
 			result.resize(size());
-            for (size_t i = 0; i < size(); ++i) {
-                result[i] = static_cast<CharType>(static_cast<uint32_t>(data[i]) ^ generate_seed(i, count));
-            }
+            ((result[Is] = static_cast<CharType>(static_cast<uint32_t>(data[Is]) ^ generate_seed<Is>(count))), ...);
             return result;
-        }
-        NOINLINE auto reveal2() {
-            auto _result = scoped_string(this, data, count);
-			return _result;
         }
     };
 }
 
-#define protect(str) \
-ikakusa::protected_string<decltype(str)&, sizeof(str), __COUNTER__>(str).reveal()
+#define _csize(str) (sizeof(str) / sizeof(std::remove_cv_t<std::remove_extent_t<std::remove_cvref_t<decltype(str)>>>) - 1)
 
-#define protect2(str) \
-ikakusa::protected_string<decltype(str)&, sizeof(str), __COUNTER__>(str).reveal2()
+#define protect(str) \
+ikakusa::protected_string<decltype(str)&, sizeof(str), __COUNTER__>(str, std::make_index_sequence<_csize(str)>{}).reveal(std::make_index_sequence<_csize(str)>{})
