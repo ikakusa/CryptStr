@@ -14,7 +14,9 @@ Even for the same string, each instance will have a different seed, making it le
 
 # Analysis results
 Encrypted string and plain string
+
 <img width="429" height="63" alt="image" src="https://github.com/user-attachments/assets/18d535a5-dda8-4432-9d2e-a8d7754d4266" />
 
 This is a function that decrypts the strings using seed functions different each character
+
 <img width="369" height="727" alt="image" src="https://github.com/user-attachments/assets/aae6d772-9172-4527-959e-c9ba9c40d41c" />
