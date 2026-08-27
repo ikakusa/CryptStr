@@ -1,16 +1,35 @@
 #pragma once
-#include <intrin.h> 
+#include <type_traits>
+#include <cstdint>
+#include <cstddef>
+#include <string>
+#include <utility>
 #include <windows.h>
 
 #if defined(_MSC_VER)
-#define NOINLINE __declspec(noinline)
-#define FORCEINLINE __forceinline
+#define PROTECTEDSTR_NOINLINE __declspec(noinline)
+#define PROTECTEDSTR_FORCEINLINE __forceinline
 #else
-#define NOINLINE __attribute__((noinline))
-#define FORCEINLINE __attribute__((always_inline))
+#define PROTECTEDSTR_NOINLINE __attribute__((noinline))
+#define PROTECTEDSTR_FORCEINLINE __attribute__((always_inline))
 #endif
 
 namespace ikakusa {
+    class time_hash {
+    public:
+        template <size_t Count>
+        static consteval std::uint32_t _time() {
+            return ((__TIME__[0] - '0') ^ Count)
+                + ((__TIME__[1] - '0') ^ (Count * 2))
+                + ((__TIME__[3] - '0') ^ (Count * 3))
+                + ((__TIME__[4] - '0') ^ (Count * 4))
+                + ((__TIME__[6] - '0') ^ (Count * 5))
+                + ((__TIME__[7] - '0') ^ (Count * 6));
+        }
+    };
+
+    template <size_t Count>
+    inline constexpr std::uint32_t __time = time_hash::_time<Count>();
     template <typename DataType, size_t Len, size_t Count>
     class protected_string {
         using CharType =
@@ -25,17 +44,9 @@ namespace ikakusa {
         static FORCEINLINE consteval size_t size() {
             return Len / sizeof(CharType) - 1;
         }
-        static FORCEINLINE consteval std::uint32_t _time() {
-            return ((__TIME__[0] - '0') ^ Count)
-                + ((__TIME__[1] - '0') ^ (Count * 2))
-                + ((__TIME__[3] - '0') ^ (Count * 3))
-                + ((__TIME__[4] - '0') ^ (Count * 4))
-                + ((__TIME__[6] - '0') ^ (Count * 5))
-                + ((__TIME__[7] - '0') ^ (Count * 6));
-        }
         template <size_t i> 
-        NOINLINE constexpr std::uint32_t generate_seed(size_t count) {
-            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() + 0x7a291du + i));
+        PROTECTEDSTR_NOINLINE constexpr std::uint32_t generate_seed(size_t count) {
+            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((__time<Count> + 0x7a291du + i));
             _1 ^= (_1 << 11) + i + count;
             _1 ^= (_1 >> 13) + i * count;
             _1 ^= (_1 << 7) + i + count;
@@ -48,7 +59,7 @@ namespace ikakusa {
             ((data[Is] = static_cast<CharType>(_data[Is] ^ generate_seed<Is>(count))), ...);
         }
 		template <size_t... Is>
-        NOINLINE auto reveal(std::index_sequence<Is...>) {
+        PROTECTEDSTR_NOINLINE auto reveal(std::index_sequence<Is...>) {
             using Type = std::basic_string<CharType>;
             Type result{};
 			result.resize(size());
@@ -71,16 +82,8 @@ namespace ikakusa {
         static FORCEINLINE consteval size_t size() {
             return Len / sizeof(CharType) - 1;
         }
-        static FORCEINLINE consteval std::uint32_t _time() {
-            return ((__TIME__[0] - '0') ^ Count)
-                + ((__TIME__[1] - '0') ^ (Count * 2))
-                + ((__TIME__[3] - '0') ^ (Count * 3))
-                + ((__TIME__[4] - '0') ^ (Count * 4))
-                + ((__TIME__[6] - '0') ^ (Count * 5))
-                + ((__TIME__[7] - '0') ^ (Count * 6));
-        }
-        NOINLINE constexpr std::uint32_t generate_seed(size_t i, size_t count) {
-            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() + 0x7a291du + i));
+        PROTECTEDSTR_NOINLINE constexpr std::uint32_t generate_seed(size_t i, size_t count) {
+            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((__time<Count> + 0x7a291du + i));
             _1 ^= (_1 << 11) + i + count;
             _1 ^= (_1 >> 13) + i * count;
             _1 ^= (_1 << 7) + i + count;
@@ -93,7 +96,7 @@ namespace ikakusa {
 				data[i] = static_cast<CharType>(_data[i] ^ generate_seed(i, count));
 			}
         }
-        NOINLINE auto reveal() {
+        PROTECTEDSTR_NOINLINE auto reveal() {
             using Type = std::basic_string<CharType>;
             Type result{};
             result.resize(size());
