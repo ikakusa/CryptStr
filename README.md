@@ -1,6 +1,17 @@
 # About this
 This is a header-only library to xor-encryption for strings at compile time works above c++20
 
+# Disclaimer
+This is more efficient for humans.
+
+This library is primarily effective `when a human performs manual static analysis`.
+
+It is ineffective when analyzed by AI or similar technologies.
+
+Additionally, since the specification requires embedding keys in the binary,
+
+`it is not suitable for sensitive information such as tokens or API keys`.
+
 # Usage
 ```cpp
 #include <iostream>
@@ -57,5 +68,3 @@ This is a function that decrypts the strings using seed functions different each
 Since Light reuses the seed function for each string, its memory usage is about X% less than Normal's.
 
 Normal treats the seed function as a separate one for each character, so its memory usage increases.
-
-This is more efficient for humans.
