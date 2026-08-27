@@ -20,7 +20,7 @@ int main()
 	std::string lite_protected_hello = lprotect("Hello, World");
 	//
 
-	//Output: Hello, World!
+	//Output: Hello, World
 	std::cout << protected_hello << std::endl;
 
 	std::cout << lite_protected_hello << std::endl;
