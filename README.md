@@ -51,3 +51,11 @@ String after encrypted
 This is a function that decrypts the strings using seed functions different each character
 
 <img width="369" height="727" alt="image" src="https://github.com/user-attachments/assets/aae6d772-9172-4527-959e-c9ba9c40d41c" />
+
+# Difference of protection between Normal and Light
+
+Since Light reuses the seed function for each string, its memory usage is about X% less than Normal's.
+
+Normal treats the seed function as a separate one for each character, so its memory usage increases.
+
+This is more efficient for humans.
