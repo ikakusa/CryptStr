@@ -44,6 +44,10 @@ Encrypted string and plain string
 
 <img width="429" height="63" alt="image" src="https://github.com/user-attachments/assets/18d535a5-dda8-4432-9d2e-a8d7754d4266" />
 
+String after encrypted
+
+<img width="318" height="91" alt="image" src="https://github.com/user-attachments/assets/97db46c3-8a2d-45e8-97a8-1d970d557076" />
+
 This is a function that decrypts the strings using seed functions different each character
 
 <img width="369" height="727" alt="image" src="https://github.com/user-attachments/assets/aae6d772-9172-4527-959e-c9ba9c40d41c" />
