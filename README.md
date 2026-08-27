@@ -1,5 +1,5 @@
 # About this
-This is a header-only library to xor-encryption for strings at compile time works above c++20
+This is a header-only library to compile-time string obfuscation works above c++20
 
 # Disclaimer
 This is more efficient for humans.
