@@ -1,6 +1,5 @@
 ﻿#include <iostream>
 #include  "CryptStr.h"
-#include <chrono>
 
 int main()
 {
