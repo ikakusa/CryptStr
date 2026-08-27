@@ -22,10 +22,10 @@ namespace ikakusa {
     public:
         size_t count;
         CharType data[Len / sizeof(CharType) - 1];
-        FORCEINLINE consteval size_t size() {
+        static FORCEINLINE consteval size_t size() {
             return Len / sizeof(CharType) - 1;
         }
-        FORCEINLINE consteval std::uint32_t _time() {
+        static FORCEINLINE consteval std::uint32_t _time() {
             return ((__TIME__[0] - '0') ^ Count)
                 + ((__TIME__[1] - '0') ^ (Count * 2))
                 + ((__TIME__[3] - '0') ^ (Count * 3))
@@ -45,14 +45,61 @@ namespace ikakusa {
 		template <size_t... Is>
         consteval explicit protected_string(DataType _data, std::index_sequence<Is...>) {
             count = Count;
-            ((data[Is] = static_cast<CharType>(static_cast<uint32_t>(_data[Is]) ^ generate_seed<Is>(count))), ...);
+            ((data[Is] = static_cast<CharType>(_data[Is] ^ generate_seed<Is>(count))), ...);
         }
 		template <size_t... Is>
         NOINLINE auto reveal(std::index_sequence<Is...>) {
             using Type = std::basic_string<CharType>;
             Type result{};
 			result.resize(size());
-            ((result[Is] = static_cast<CharType>(static_cast<uint32_t>(data[Is]) ^ generate_seed<Is>(count))), ...);
+            ((result[Is] = static_cast<CharType>(data[Is] ^ generate_seed<Is>(count))), ...);
+            return result;
+        }
+    };
+
+    template <typename DataType, size_t Len, size_t Count>
+    class protected_string_lite {
+        using CharType =
+            std::remove_cv_t<
+            std::remove_extent_t<
+            std::remove_cvref_t<DataType>
+            >
+            >;
+    public:
+        size_t count;
+        CharType data[Len / sizeof(CharType) - 1];
+        static FORCEINLINE consteval size_t size() {
+            return Len / sizeof(CharType) - 1;
+        }
+        static FORCEINLINE consteval std::uint32_t _time() {
+            return ((__TIME__[0] - '0') ^ Count)
+                + ((__TIME__[1] - '0') ^ (Count * 2))
+                + ((__TIME__[3] - '0') ^ (Count * 3))
+                + ((__TIME__[4] - '0') ^ (Count * 4))
+                + ((__TIME__[6] - '0') ^ (Count * 5))
+                + ((__TIME__[7] - '0') ^ (Count * 6));
+        }
+        NOINLINE constexpr std::uint32_t generate_seed(size_t i, size_t count) {
+            std::uint32_t _1 = (size() - count + (size() * count * count)) ^ ((_time() + 0x7a291du + i));
+            _1 ^= (_1 << 11) + i + count;
+            _1 ^= (_1 >> 13) + i * count;
+            _1 ^= (_1 << 7) + i + count;
+            return _1;
+        }
+    public:
+        consteval explicit protected_string_lite(DataType _data) {
+            count = Count;
+			for (size_t i = 0; i < size(); ++i) {
+				data[i] = static_cast<CharType>(_data[i] ^ generate_seed(i, count));
+			}
+        }
+        NOINLINE auto reveal() {
+            using Type = std::basic_string<CharType>;
+            Type result{};
+            result.resize(size());
+			for (size_t i = 0; i < size(); ++i) {
+				result[i] = static_cast<CharType>(data[i] ^ generate_seed(i, count));
+			}
             return result;
         }
     };
@@ -62,3 +109,6 @@ namespace ikakusa {
 
 #define protect(str) \
 ikakusa::protected_string<decltype(str)&, sizeof(str), __COUNTER__>(str, std::make_index_sequence<_csize(str)>{}).reveal(std::make_index_sequence<_csize(str)>{})
+
+#define lprotect(str) \
+ikakusa::protected_string_lite<decltype(str)&, sizeof(str), __COUNTER__>(str).reveal()

@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include  "CryptStr.h"
+#include <chrono>
 
 int main()
 {
@@ -11,8 +12,14 @@ int main()
 	std::u8string protected_u8_hello = protect(u8"Hello, World");
 	//
 
+	// Also there is a lite weighted version of the protection, which is faster and smaller, but less secure
+	std::string lite_protected_hello = lprotect("Hello, World");
+	//
+
 	//Output: Hello, World!
 	std::cout << protected_hello << std::endl;
+
+	std::cout << lite_protected_hello << std::endl;
 
 	std::wcout << protected_wide_hello << std::endl;
 	std::cout << reinterpret_cast<const char*>(protected_u8_hello.c_str()) << std::endl;
